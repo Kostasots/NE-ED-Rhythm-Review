@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0}</style>
+<title>ED Rhythm Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap">
+<style>
+:root{
+  /* Layout: tabbed trainer (Review, Name That Rhythm, First Moves, Readiness Check). Every strip sits in a dark monitor panel; the page around it is a cool clinical neutral with one blue accent. */
+  --bg:#f3f6f9; --surface:#ffffff; --surface-2:#e8eef4; --fg:#13212c; --muted:#4d5d6a; --line:#cfd9e2;
+  --accent:#116397; --accent-ink:#ffffff; --accent-soft:#d9eaf5;
+  --ok:#16703a; --ok-soft:#dcf2e4; --bad:#b3261e; --bad-soft:#fbe3e0; --warn:#8f4600; --warn-soft:#fcebd3;
+  --mon-bg:#08110d; --mon-minor:#122a1e; --mon-major:#1f4533; --mon-trace:#58f2a2; --mon-text:#86b39d;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-head:'Space Grotesk','IBM Plex Sans',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1720; --surface:#14212b; --surface-2:#1b2c38; --fg:#e7eff5; --muted:#9db0bf; --line:#2a3f4e;
+    --accent:#74bde9; --accent-ink:#06121a; --accent-soft:#17384b;
+    --ok:#62d68f; --ok-soft:#133626; --bad:#ff9d94; --bad-soft:#40201e; --warn:#f3b571; --warn-soft:#3b2a14;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1720; --surface:#14212b; --surface-2:#1b2c38; --fg:#e7eff5; --muted:#9db0bf; --line:#2a3f4e;
+  --accent:#74bde9; --accent-ink:#06121a; --accent-soft:#17384b;
+  --ok:#62d68f; --ok-soft:#133626; --bad:#ff9d94; --bad-soft:#40201e; --warn:#f3b571; --warn-soft:#3b2a14;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5}
+.app{max-width:1100px;margin:0 auto;padding-block:22px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-family:var(--font-head);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(28px,5vw,40px);letter-spacing:-0.01em}
+h2{font-size:clamp(21px,3.2vw,26px)}
+h3{font-size:17px}
+h4{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+p{margin:0}
+.kicker{font:500 12px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.sub{color:var(--muted);max-width:62ch;margin-top:8px}
+.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+.log{font:500 12px var(--font-mono);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 12px}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);margin:22px 0 22px}
+.tab{background:none;border:1px solid transparent;border-bottom:0;border-radius:6px 6px 0 0;color:var(--muted);font:600 14px var(--font-body);padding:10px 16px;cursor:pointer;min-height:44px}
+.tab:hover{color:var(--fg)}
+.tab[aria-selected="true"]{color:var(--accent);background:var(--surface);border-color:var(--line);margin-bottom:-1px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.panel-head{margin-bottom:16px}
+.steps{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:14px;min-width:0}
+.steps li::before{content:counter(s);display:block;font:500 12px var(--font-mono);color:var(--accent);margin-bottom:2px}
+.steps b{display:block}
+.callout{background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:12px 16px;margin-bottom:18px}
+.callout b{color:var(--warn)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.chip{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font:500 14px var(--font-body);cursor:pointer;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.spacer{flex:1}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,480px),1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-width:0;scroll-margin-top:12px}
+.card[hidden]{display:none}
+.mon{background:var(--mon-bg)}
+.mon-bar{display:flex;justify-content:space-between;gap:8px;font:500 11px var(--font-mono);color:var(--mon-text);padding:8px 12px 2px;letter-spacing:.05em;text-transform:uppercase}
+.strip{display:block;width:100%;aspect-ratio:5/1}
+.strip .gm,.strip .gM,.strip .tk,.strip .tr{fill:none;vector-effect:non-scaling-stroke}
+.strip .gm{stroke:var(--mon-minor);stroke-width:1;shape-rendering:crispEdges}
+.strip .gM{stroke:var(--mon-major);stroke-width:1;shape-rendering:crispEdges}
+.strip .tk{stroke:var(--mon-text);stroke-width:1.5}
+.strip .tr{stroke:var(--mon-trace);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.mon.big .strip{aspect-ratio:5/1.15}
+@media (max-width:560px){.strip{aspect-ratio:5/1.9}.mon.big .strip{aspect-ratio:5/2.1}}
+@keyframes sweep{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.strip.sweep{animation:sweep .9s linear both}
+@media (prefers-reduced-motion:reduce){.strip.sweep{animation:none}}
+.card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.card-head{display:flex;flex-wrap:wrap;gap:8px 12px;justify-content:space-between;align-items:flex-start}
+.tag{font:600 12px var(--font-body);padding:3px 9px;border-radius:4px;border:1px solid currentColor;white-space:nowrap}
+.tag.ok{color:var(--ok);background:var(--ok-soft)}
+.tag.treat{color:var(--accent);background:var(--accent-soft)}
+.tag.sync,.tag.pace{color:var(--warn);background:var(--warn-soft)}
+.tag.defib,.tag.cpr{color:var(--bad);background:var(--bad-soft)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:14px}
+.facts dt{font:500 12px var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.facts dd{margin:0;min-width:0}
+details{border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:600;color:var(--accent);min-height:28px}
+.moves{margin:8px 0 0;padding-left:20px}
+.moves li,.watch li{margin-bottom:6px}
+.watch{margin:0;padding-left:20px}
+.card-foot{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;margin-top:auto;padding-top:4px}
+.mast{font:500 12px var(--font-mono);color:var(--muted)}
+.btn{background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);border-radius:6px;padding:10px 18px;font:600 15px var(--font-body);cursor:pointer;min-height:44px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.small{min-height:36px;padding:6px 12px;font-size:14px}
+.section{margin-top:30px}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 12px var(--font-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+.drugs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin:0}
+.drugs div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 14px}
+.drugs dt{font-weight:600}
+.drugs dd{margin:2px 0 0;color:var(--muted);font-size:14px}
+.scorebar{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;margin-bottom:12px;font:500 13px var(--font-mono);color:var(--muted)}
+.scorebar label{display:flex;gap:8px;align-items:center;font-family:var(--font-body);font-size:14px;cursor:pointer;min-height:36px}
+.ctx{margin:12px 0;font-size:16px}
+.ctx b{font:500 12px var(--font-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-right:8px}
+.vit{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.vit span{font:500 13px var(--font-mono);background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:3px 8px}
+.ans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.opts{display:grid;gap:8px;margin-top:12px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:11px 14px;font:500 15px/1.4 var(--font-body);cursor:pointer;min-height:44px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default;color:var(--fg)}
+.opt .key{font:600 12px var(--font-mono);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin-top:2px}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.ok{background:var(--ok-soft);border-color:var(--ok)}
+.opt.bad{background:var(--bad-soft);border-color:var(--bad)}
+.opt .mark{margin-left:auto;font-weight:600;white-space:nowrap}
+.fb{margin-top:14px;border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--surface)}
+.fb.ok{background:var(--ok-soft);border-color:var(--ok)}
+.fb.bad{background:var(--bad-soft);border-color:var(--bad)}
+.fb h3{margin-bottom:6px}
+.fb p{margin-bottom:8px}
+.fb .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.bar{height:6px;background:var(--surface-2);border-radius:3px;margin:6px 0 16px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.intro{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px 22px;max-width:70ch}
+.intro ul{margin:10px 0 16px;padding-left:20px}
+.result{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px 22px;margin-bottom:18px}
+.result .big{font:700 clamp(34px,7vw,52px)/1 var(--font-head)}
+.result.pass{border-color:var(--ok);background:var(--ok-soft)}
+.result.fail{border-color:var(--warn);background:var(--warn-soft)}
+.review-item{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.review-item .in{padding:12px 16px 14px}
+.review-item p{margin-bottom:6px}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;align-items:center}
+footer p{max-width:72ch}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div>
+      <p class="kicker">ED tele assessment prep</p>
+      <h1>ED Rhythm Review</h1>
+      <p class="sub">Twelve rhythms. Identify the strip, then decide what the ED nurse does first. Built on the 2025 AHA ACLS algorithms.</p>
+    </div>
+    <div class="log" id="log" aria-live="polite"></div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Activity modes">
+    <button class="tab" role="tab" id="t-review" aria-controls="p-review" data-tab="review">Review</button>
+    <button class="tab" role="tab" id="t-name" aria-controls="p-name" data-tab="name">Name That Rhythm</button>
+    <button class="tab" role="tab" id="t-moves" aria-controls="p-moves" data-tab="moves">First Moves</button>
+    <button class="tab" role="tab" id="t-check" aria-controls="p-check" data-tab="check">Readiness Check</button>
+  </div>
+
+  <section id="p-review" role="tabpanel" aria-labelledby="t-review">
+    <div class="panel-head">
+      <h2>Rhythm review</h2>
+      <p class="sub">Each card shows a strip you can regenerate, the criteria that identify it, and the first moves for the ED nurse.</p>
+    </div>
+    <ol class="steps" aria-label="Read every strip in this order">
+      <li><b>Rate</b>Count QRS in 6 s, multiply by 10</li>
+      <li><b>Regular?</b>Check R to R spacing</li>
+      <li><b>P waves</b>One before every QRS?</li>
+      <li><b>PR interval</b>0.12 to 0.20 s</li>
+      <li><b>QRS width</b>Narrow is under 0.12 s</li>
+      <li><b>The patient</b>Pulse, BP, mental status</li>
+    </ol>
+    <div class="callout"><b>Unstable with a pulse means any one of:</b> hypotension, acutely altered mental status, signs of shock, ischemic chest discomfort, or acute heart failure. Unstable tachycardia gets synchronized cardioversion. Symptomatic bradycardia gets atropine, then pacing.</div>
+    <div class="filters" role="group" aria-label="Filter rhythms">
+      <button class="chip" data-f="all" aria-pressed="true">All 12</button>
+      <button class="chip" data-f="sinus" aria-pressed="false">Sinus</button>
+      <button class="chip" data-f="atrial" aria-pressed="false">Atrial</button>
+      <button class="chip" data-f="vent" aria-pressed="false">Ventricular and block</button>
+      <button class="chip" data-f="arrest" aria-pressed="false">Arrest rhythms</button>
+      <span class="spacer"></span>
+      <button class="btn ghost small" id="toggle-all">Expand all first moves</button>
+    </div>
+    <div class="cards" id="cards"></div>
+
+    <div class="section">
+      <h2>Shock or no shock</h2>
+      <div class="tbl" style="margin-top:12px"><table>
+        <thead><tr><th>Situation</th><th>What the ED nurse prepares</th></tr></thead>
+        <tbody>
+          <tr><td>V-fib, pulseless V-tach</td><td>CPR and defibrillation (unsynchronized). Epinephrine once initial shocks have failed.</td></tr>
+          <tr><td>PEA, asystole</td><td>CPR and epinephrine 1 mg as soon as possible, then every 3 to 5 minutes. No shock.</td></tr>
+          <tr><td>Unstable tachycardia with a pulse</td><td>Synchronized cardioversion. Sedate if feasible.</td></tr>
+          <tr><td>Symptomatic bradycardia, heart block</td><td>Atropine 1 mg IV. If it fails, or the block is high grade: pacing, or dopamine or epinephrine infusion.</td></tr>
+          <tr><td>Stable tachycardia</td><td>SVT: vagal maneuver, then adenosine. A-fib and flutter: rate control. V-tach: antiarrhythmic infusion with expert help.</td></tr>
+          <tr><td>Normal sinus, sinus tach, sinus brady</td><td>Treat the cause and the patient, not the number.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="section">
+      <h2>Doses and numbers</h2>
+      <dl class="drugs" style="margin-top:12px">
+        <div><dt>Atropine</dt><dd>1 mg IV, repeat every 3 to 5 min, maximum 3 mg</dd></div>
+        <div><dt>Adenosine</dt><dd>6 mg rapid IV push with flush, then 12 mg if needed</dd></div>
+        <div><dt>Epinephrine (arrest)</dt><dd>1 mg IV (IO if no IV) every 3 to 5 min</dd></div>
+        <div><dt>Amiodarone (arrest, VF or pVT)</dt><dd>300 mg, then 150 mg</dd></div>
+        <div><dt>Amiodarone (stable VT)</dt><dd>150 mg IV over 10 min</dd></div>
+        <div><dt>Lidocaine (arrest)</dt><dd>1 to 1.5 mg/kg, then 0.5 to 0.75 mg/kg</dd></div>
+        <div><dt>Dopamine infusion</dt><dd>5 to 20 mcg/kg/min</dd></div>
+        <div><dt>Epinephrine infusion (bradycardia)</dt><dd>2 to 10 mcg/min</dd></div>
+        <div><dt>Compressions</dt><dd>100 to 120 per min, at least 5 cm (2 in) deep, full recoil, short pauses</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="p-name" role="tabpanel" aria-labelledby="t-name" hidden>
+    <div class="panel-head">
+      <h2>Name that rhythm</h2>
+      <p class="sub">Every strip is 6 seconds, so count the QRS complexes and multiply by 10 for the rate. Strips are generated fresh each time.</p>
+    </div>
+    <div class="scorebar">
+      <span id="id-score">0 of 0 correct</span>
+      <span id="id-streak">Streak 0</span>
+      <label><input type="checkbox" id="id-focus"> Show my misses more often</label>
+    </div>
+    <div class="mon big"><div class="mon-bar"><span>Lead II</span><span>25 mm/s &middot; large box = 0.2 s</span></div><div id="id-strip"></div></div>
+    <p class="ctx"><b>Patient</b><span id="id-ctx"></span></p>
+    <div class="ans-grid" id="id-ans"></div>
+    <div id="id-fb" aria-live="polite"></div>
+  </section>
+
+  <section id="p-moves" role="tabpanel" aria-labelledby="t-moves" hidden>
+    <div class="panel-head">
+      <h2>First moves</h2>
+      <p class="sub">Read the strip and the patient, then choose the ED nurse's priority action. The rhythm name is revealed after you answer.</p>
+    </div>
+    <div id="mv-body"></div>
+  </section>
+
+  <section id="p-check" role="tabpanel" aria-labelledby="t-check" hidden>
+    <div id="ck-body"></div>
+  </section>
+
+  <footer>
+    <p>Educational review based on the 2025 AHA ACLS guidelines. Follow OhioHealth ED policy, provider orders and your defibrillator's energy settings. Progress is saved in this browser only.</p>
+    <button class="btn ghost small" id="reset">Reset my progress</button>
+  </footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,el){return (el||document).querySelector(s);};
+var $$=function(s,el){return Array.prototype.slice.call((el||document).querySelectorAll(s));};
+var rnd=function(a,b){return a+Math.random()*(b-a);};
+var pick=function(a){return a[Math.floor(Math.random()*a.length)];};
+var shuffle=function(a){var r=a.slice();for(var i=r.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=r[i];r[i]=r[j];r[j]=t;}return r;};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+
+/* ---------- strip generator ---------- */
+var FS=200,DUR=6,N=FS*DUR,W=1200,H=240,BASE=150,SCALE=80;
+function g(t,mu,s,a){var d=(t-mu)/s;return a*Math.exp(-0.5*d*d);}
+function sample(ev,extra){
+  var y=new Float64Array(N);
+  for(var i=0;i<N;i++){
+    var t=i/FS,v=0;
+    for(var k=0;k<ev.length;k++){var e=ev[k];if(Math.abs(t-e.mu)<e.s*5)v+=g(t,e.mu,e.s,e.a);}
+    if(extra)v+=extra(t);
+    y[i]=v;
+  }
+  return y;
+}
+function base(amp){amp=amp||1;var ph=rnd(0,6.28),f=rnd(0.18,0.3);return function(t){return amp*(0.02*Math.sin(6.283*f*t+ph)+(Math.random()-0.5)*0.012);};}
+function narrowQRS(ev,tr,a){ev.push({mu:tr-0.024,s:0.009,a:-0.10*a},{mu:tr,s:0.011,a:a},{mu:tr+0.027,s:0.012,a:-0.22*a});}
+function wideQRS(ev,tr,a){ev.push({mu:tr,s:0.036,a:0.85*a},{mu:tr+0.08,s:0.03,a:-0.28*a});}
+function tWave(ev,tr,rr,a){var off=Math.max(0.12,Math.min(0.26,0.32*rr+0.02));ev.push({mu:tr+off,s:Math.min(0.05,0.03+0.02*rr),a:a});}
+function wideT(ev,tr){ev.push({mu:tr+0.21,s:0.065,a:-0.30});}
+function pWave(ev,tp,a){ev.push({mu:tp,s:0.03,a:a||0.13});}
+function rateTxt(r){return 'Rate about '+Math.round(r)+'/min';}
+
+function sinusLike(rate,o){
+  var rr=60/rate,ev=[],tr=rnd(o.s0,o.s1);
+  while(tr<DUR+0.3){
+    if(o.p)pWave(ev,tr-o.pOff,o.pAmp);
+    narrowQRS(ev,tr,rnd(0.95,1.05));
+    tWave(ev,tr,rr,o.t);
+    tr+=rr+rnd(-o.jit,o.jit);
+  }
+  return sample(ev,base());
+}
+function genNSR(rate){rate=rate||rnd(62,84);return {y:sinusLike(rate,{s0:0.5,s1:0.7,p:1,pOff:0.11,pAmp:0.13,t:0.27,jit:0.012}),info:rateTxt(rate)+', regular'};}
+function genST(rate){rate=rate||rnd(118,142);return {y:sinusLike(rate,{s0:0.4,s1:0.5,p:1,pOff:0.09,pAmp:0.12,t:0.24,jit:0.006}),info:rateTxt(rate)+', regular'};}
+function genSB(rate){rate=rate||rnd(38,50);return {y:sinusLike(rate,{s0:0.6,s1:0.9,p:1,pOff:0.11,pAmp:0.14,t:0.3,jit:0.02}),info:rateTxt(rate)+', regular'};}
+function genSVT(rate){
+  rate=rate||rnd(172,205);
+  var rr=60/rate,ev=[],tr=rnd(0.2,0.4);
+  while(tr<DUR+0.3){narrowQRS(ev,tr,rnd(0.88,0.96));ev.push({mu:tr+0.07,s:0.05,a:-0.07});tWave(ev,tr,rr,0.1);tr+=rr+rnd(-0.003,0.003);}
+  return {y:sample(ev,base(0.8)),info:rateTxt(rate)+', very regular, no visible P waves'};
+}
+function fibBase(amp){
+  var c=[0,1,2].map(function(){return {f:rnd(4,8),p:rnd(0,6.28),a:rnd(0.6,1)*amp,mf:rnd(0.3,0.9),mp:rnd(0,6.28)};});
+  return function(t){var v=0;for(var i=0;i<c.length;i++){var k=c[i];v+=k.a*(0.7+0.3*Math.sin(6.283*k.mf*t+k.mp))*Math.sin(6.283*k.f*t+k.p);}return v+(Math.random()-0.5)*0.01;};
+}
+function genAF(rate,rvr){
+  rate=rate||(rvr?rnd(130,170):rnd(70,100));
+  var mean=60/rate,ev=[],tr=rnd(0.25,0.6),n=0;
+  while(tr<DUR+0.3){narrowQRS(ev,tr,rnd(0.82,1.05));tWave(ev,tr,mean,0.13);if(tr<DUR)n++;tr+=mean*rnd(0.62,1.45);}
+  return {y:sample(ev,fibBase(rvr?0.03:0.04)),info:'Ventricular rate about '+(n*10)+'/min ('+n+' QRS in 6 s), irregularly irregular'};
+}
+function genAFRVR(rate){return genAF(rate||rnd(130,170),true);}
+function genFlutter(rate){
+  var T=0.2,block=rate?(rate<110?4:2):(Math.random()<0.75?2:4),phase=rnd(0,T),ev=[],tr=phase+0.1;
+  while(tr<0.3)tr+=T;
+  while(tr<DUR+0.3){narrowQRS(ev,tr,rnd(0.95,1.0));tr+=block*T;}
+  var b=base(0.5);
+  var fw=function(t){var v=0;for(var k=1;k<=4;k++)v+=Math.sin(6.283*k*(t-phase)/T)/k;return 0.1*v;};
+  return {y:sample(ev,function(t){return fw(t)+b(t);}),info:'Atrial rate about 300/min, ventricular about '+(block===2?150:75)+'/min ('+block+':1 block)'};
+}
+function genVT(rate){
+  rate=rate||rnd(158,192);
+  var rr=60/rate,ev=[],tr=rnd(0.15,0.35);
+  while(tr<DUR+0.4){ev.push({mu:tr,s:0.055,a:0.95},{mu:tr+rr*0.5,s:0.05,a:-0.75});tr+=rr+rnd(-0.004,0.004);}
+  return {y:sample(ev,base(0.6)),info:rateTxt(rate)+', regular, wide uniform complexes'};
+}
+function genCHB(vr){
+  var aRate=rnd(72,92),pp=60/aRate,wide=vr?vr<39:Math.random()<0.65;
+  var vRate=vr||(wide?rnd(30,38):rnd(40,46)),rr=60/vRate,ev=[],tp=rnd(0.1,0.4),tr=rnd(0.5,1.0);
+  while(tp<DUR+0.2){pWave(ev,tp,0.14);tp+=pp+rnd(-0.005,0.005);}
+  while(tr<DUR+0.3){
+    if(wide){wideQRS(ev,tr,rnd(0.95,1.05));wideT(ev,tr);}else{narrowQRS(ev,tr,1);tWave(ev,tr,rr,0.25);}
+    tr+=rr+rnd(-0.01,0.01);
+  }
+  return {y:sample(ev,base()),info:'Atrial rate about '+Math.round(aRate)+'/min, ventricular about '+Math.round(vRate)+'/min, no relationship between P and QRS'};
+}
+function genVF(){
+  var comps=[],i,t,v,mx=0;
+  for(i=0;i<7;i++)comps.push({f:rnd(3.2,8.5),p:rnd(0,6.28),a:rnd(0.5,1),mf:rnd(0.25,1.1),mp:rnd(0,6.28)});
+  var raw=new Float64Array(N);
+  for(i=0;i<N;i++){t=i/FS;v=0;for(var k=0;k<comps.length;k++){var c=comps[k];v+=c.a*(0.55+0.45*Math.sin(6.283*c.mf*t+c.mp))*Math.sin(6.283*c.f*t+c.p);}raw[i]=v;if(Math.abs(v)>mx)mx=Math.abs(v);}
+  var amp=rnd(0.55,0.85);
+  for(i=0;i<N;i++)raw[i]=raw[i]/mx*amp+(Math.random()-0.5)*0.02;
+  return {y:raw,info:'No organized complexes, chaotic baseline'};
+}
+function genPEA(rate){
+  var narrow=rate?rate>=40:Math.random()<0.5,ev=[],rr,tr;
+  if(narrow){
+    rate=rate||rnd(44,66);rr=60/rate;tr=rnd(0.5,0.9);
+    while(tr<DUR+0.3){pWave(ev,tr-0.11,0.1);narrowQRS(ev,tr,rnd(0.7,0.85));tWave(ev,tr,rr,0.2);tr+=rr+rnd(-0.02,0.02);}
+  }else{
+    rate=rate||rnd(32,46);rr=60/rate;tr=rnd(0.5,1.0);
+    while(tr<DUR+0.3){wideQRS(ev,tr,rnd(0.8,0.95));wideT(ev,tr);tr+=rr+rnd(-0.05,0.05);}
+  }
+  return {y:sample(ev,base()),info:'Organized rhythm at about '+Math.round(rate)+'/min. The strip cannot tell you there is no pulse.'};
+}
+function genAsys(){
+  var ph=rnd(0,6.28);
+  return {y:sample([],function(t){return 0.045*Math.sin(6.283*0.22*t+ph)+0.012*Math.sin(6.283*0.7*t)+(Math.random()-0.5)*0.008;}),info:'Flat baseline, no P waves or QRS'};
+}
+
+var GM=(function(){var d='',x,y;for(x=8;x<W;x+=8){if(x%40)d+='M'+x+',0V'+H;}for(y=8;y<H;y+=8){if(y%40)d+='M0,'+y+'H'+W;}return d;})();
+var GMJ=(function(){var d='',x,y;for(x=40;x<W;x+=40)d+='M'+x+',0V'+H;for(y=40;y<H;y+=40)d+='M0,'+y+'H'+W;return d;})();
+var TK=(function(){var d='',x;for(x=200;x<W;x+=200)d+='M'+x+',0V12';return d;})();
+function svgOf(y,label,sweep){
+  var d='',i,x,py;
+  for(i=0;i<N;i++){x=i*W/(N-1);py=BASE-y[i]*SCALE;py=py<6?6:(py>H-6?H-6:py);d+=(i?'L':'M')+x.toFixed(1)+' '+py.toFixed(1);}
+  return '<svg class="strip'+(sweep?' sweep':'')+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img" aria-label="'+esc(label)+'"><path class="gm" d="'+GM+'"/><path class="gM" d="'+GMJ+'"/><path class="tk" d="'+TK+'"/><path class="tr" d="'+d+'"/></svg>';
+}
+
+/* ---------- content ---------- */
+var R=[
+{id:'nsr',name:'Normal sinus rhythm',group:'sinus',kind:'ok',tag:'Monitor and assess',gen:genNSR,
+ f:[['Rate','60 to 100/min'],['Rhythm','Regular'],['P waves','Upright, one before every QRS'],['PR','0.12 to 0.20 s'],['QRS','Narrow, under 0.12 s']],
+ moves:['Treat the patient, not the monitor: check symptoms, pulse and perfusion.','A normal rhythm does not rule out ACS. For chest pain, get a 12-lead ECG within 10 minutes.','Keep on continuous monitoring and save a baseline strip.'],
+ watch:['An organized, normal-looking rhythm with no pulse is PEA. Always check the pulse.'],
+ ctx:['Alert, BP 124/78, no complaints.','Awake and comfortable, SpO₂ 98%.','Mild chest tightness, BP 138/84, alert.']},
+{id:'stach',name:'Sinus tachycardia',group:'sinus',kind:'treat',tag:'Find and treat the cause',gen:genST,
+ f:[['Rate','Over 100/min, usually 100 to 150'],['Rhythm','Regular'],['P waves','Present, may sit on the preceding T wave'],['PR','Normal or slightly short'],['QRS','Narrow']],
+ moves:['Look for the driver: pain, fever, sepsis, bleeding or volume loss, hypoxia, anxiety, PE, anemia, drugs.','Support airway and breathing, give oxygen if hypoxic, start IV access.','Treat the cause (fluids, analgesia, antipyretic, bleeding control). Do not cardiovert or give drugs to slow the rate.','A rate that sits near 150 and does not change should make you look again for flutter or SVT.'],
+ watch:['Sinus tach speeds up and slows down gradually. A sudden start or stop points to SVT.'],
+ ctx:['Febrile, BP 108/62, looks ill.','Anxious after a fall, BP 132/84.','Vomiting for two days, dry mucous membranes, BP 98/60.']},
+{id:'sbrady',name:'Sinus bradycardia',group:'sinus',kind:'pace',tag:'Treat only if symptomatic',gen:genSB,
+ f:[['Rate','Under 60/min'],['Rhythm','Regular'],['P waves','Present, one before every QRS'],['PR','Normal'],['QRS','Narrow']],
+ moves:['Check for symptoms: hypotension, altered mental status, chest pain, signs of shock, acute heart failure.','Asymptomatic: monitor and look for causes (beta-blockers, calcium channel blockers, digoxin, inferior MI, hypothermia, hypoxia).','Symptomatic: IV access, oxygen if hypoxic, 12-lead, atropine 1 mg IV. Repeat every 3 to 5 min, maximum 3 mg.','If atropine fails: transcutaneous pacing, or dopamine 5 to 20 mcg/kg/min, or epinephrine 2 to 10 mcg/min. Get expert help.'],
+ watch:['Athletes and sleeping patients can be normal below 60. Do not give atropine for a number alone.'],
+ ctx:['Dizzy and diaphoretic, BP 84/50.','Well-conditioned runner, BP 118/70, no symptoms.','New confusion, BP 82/48, on metoprolol.']},
+{id:'svt',name:'SVT',group:'atrial',kind:'sync',tag:'Stable: vagal, adenosine. Unstable: cardiovert',gen:genSVT,
+ f:[['Rate','Usually 150 to 250/min, abrupt start and stop'],['Rhythm','Very regular'],['P waves','Absent or hidden in the QRS or T'],['PR','Not measurable'],['QRS','Narrow']],
+ moves:['Unstable (hypotension, altered mental status, shock, ischemic chest pain, acute heart failure): pads on, sedate if feasible, synchronized cardioversion. Start 50 to 100 J or per your device.','Stable: IV access in a large proximal vein (antecubital) and a 12-lead.','Vagal maneuver first (modified Valsalva).','Adenosine 6 mg rapid IV push followed by a rapid flush. If no change, 12 mg. Warn the patient about chest pressure, flushing and a brief pause.','If adenosine fails: beta-blocker or calcium channel blocker, with expert consultation.'],
+ watch:['Adenosine can cause a brief asystolic pause, so keep pads and the defibrillator at the bedside.','Adenosine is for regular rhythms. Do not use it on irregular rhythms like A-fib.']
+ ,ctx:['Sudden racing heart, BP 122/76, alert.','Palpitations and lightheaded, BP 118/74.','Chest pressure, BP 74/40, drowsy.']},
+{id:'afib',name:'Atrial fibrillation (A-fib)',group:'atrial',kind:'treat',tag:'Rate control. Cardiovert if unstable',gen:function(r){return genAF(r,false);},
+ f:[['Rate','Ventricular rate varies. Controlled is under 100/min'],['Rhythm','Irregularly irregular'],['P waves','None, fibrillatory baseline'],['PR','None'],['QRS','Narrow']],
+ moves:['Check stability first. Unstable means synchronized cardioversion.','12-lead ECG and IV access. Look for triggers: sepsis, thyroid disease, alcohol, PE, MI, electrolytes.','Stable with a controlled rate: continuous monitoring and provider decision on rate or rhythm strategy.','Document onset time. Unknown onset, or over 48 hours, raises stroke risk with cardioversion, so that is a provider decision.','Screen for stroke symptoms and expect an anticoagulation discussion.'],
+ watch:['Irregularly irregular with no true P waves is A-fib. Irregular with varied P waves suggests multifocal atrial tachycardia.'],
+ ctx:['Palpitations, BP 130/82, alert.','Irregular pulse found at triage, no distress.','Mild shortness of breath, BP 126/78.']},
+{id:'afrvr',name:'A-fib with RVR',group:'atrial',kind:'sync',tag:'Stable: rate control. Unstable: cardiovert',gen:genAFRVR,
+ f:[['Rate','Ventricular rate over 110/min, often 130 to 180'],['Rhythm','Irregularly irregular'],['P waves','None, fibrillatory baseline'],['PR','None'],['QRS','Narrow']],
+ moves:['Unstable (hypotension, altered mental status, shock, ischemic chest pain, acute heart failure): pads on, sedate if feasible, synchronized cardioversion. Biphasic 120 to 200 J or per your device.','Stable: IV access, 12-lead, treat triggers, continuous BP monitoring.','Rate control per order: IV diltiazem (commonly 0.25 mg/kg over 2 min) or IV metoprolol.','Hold calcium channel blockers and beta-blockers if hypotensive or in decompensated heart failure. Watch BP closely after every dose.'],
+ watch:['Wide, irregular and very fast (over 200) suggests pre-excited A-fib (WPW). Avoid diltiazem, beta-blockers, adenosine and digoxin and call for help.']
+ ,ctx:['Palpitations and shortness of breath, BP 118/70.','Racing heart, BP 130/80, alert.','Dyspneic with crackles, BP 74/42.']},
+{id:'flutter',name:'Atrial flutter (A-flutter)',group:'atrial',kind:'treat',tag:'Rate control. Cardiovert if unstable',gen:genFlutter,
+ f:[['Rate','Atrial about 300/min. Ventricular often 150 (2:1) or 75 (4:1)'],['Rhythm','Regular with fixed block, irregular if block varies'],['P waves','Sawtooth flutter waves'],['PR','Not measurable'],['QRS','Narrow']],
+ moves:['A regular rate stuck near 150 should make you look for flutter waves (leads II, III, aVF, V1).','Unstable: pads on, sedate if feasible, synchronized cardioversion. Flutter often converts at lower energy (start 50 to 100 J or per your device).','Stable: IV access, 12-lead, rate control per order (diltiazem or beta-blocker), anticoagulation assessment like A-fib.','Vagal maneuvers or adenosine slow the ventricular rate and unmask flutter waves but rarely convert it.'],
+ watch:['A fixed rate near 150 that does not change with pain relief or fluids is flutter until proven otherwise.']
+ ,ctx:['Palpitations, BP 126/74, alert.','Short of breath on exertion, BP 134/80.','Told the heart rate is always 150, BP 128/76.']},
+{id:'vt',name:'Ventricular tachycardia (V-tach)',group:'vent',kind:'sync',tag:'Check the pulse. Pulse: cardiovert. No pulse: shock',gen:genVT,
+ f:[['Rate','Over 100/min, usually 150 to 250'],['Rhythm','Regular when monomorphic'],['P waves','Absent or dissociated'],['PR','Not measurable'],['QRS','Wide, 0.12 s or more, uniform shape']],
+ moves:['Check for a pulse first. No pulse means treat as V-fib: CPR and immediate defibrillation.','Pulse with instability: pads on, sedate if feasible, synchronized cardioversion. Start 100 J or per your device.','Pulse and stable: IV access, 12-lead, continuous monitoring, prepare an antiarrhythmic infusion (procainamide or amiodarone 150 mg over 10 min) and get expert consultation.','Polymorphic V-tach: unsynchronized defibrillation if unstable. Magnesium sulfate for torsades.'],
+ watch:['Treat a wide-complex tachycardia as V-tach until proven otherwise. Do not assume SVT with aberrancy.']
+ ,ctx:['Pulse present, BP 78/42, confused.','Palpitations, BP 118/72, alert, no chest pain.','Unresponsive, no pulse.']},
+{id:'chb',name:'Third-degree heart block',group:'vent',kind:'pace',tag:'Pace',gen:genCHB,
+ f:[['Rate','Atrial 60 to 100/min, ventricular escape 20 to 60/min'],['Rhythm','P to P regular, R to R regular, unrelated'],['P waves','Present, marching through the QRS'],['PR','Varies, no relationship'],['QRS','Narrow (junctional escape) or wide (ventricular escape)']],
+ moves:['Assess perfusion: hypotension, syncope, altered mental status, chest pain, heart failure.','Pads on now and prepare for transcutaneous pacing, with analgesia or sedation as able.','Atropine 1 mg IV may be given while you set up, but it often fails in high-grade block. Do not wait for it.','Bridge with dopamine 5 to 20 mcg/kg/min or epinephrine 2 to 10 mcg/min. Anticipate cardiology and a transvenous pacer.','Look for causes: inferior MI, digoxin, beta-blocker or calcium channel blocker toxicity, hyperkalemia.'],
+ watch:['Do not call it sinus bradycardia. Find the P waves marching through the QRS.','Avoid drugs that slow conduction (beta-blockers, calcium channel blockers, adenosine).']
+ ,ctx:['Syncope, BP 78/44.','Weak and dizzy, BP 86/50.','Chest pain, short of breath, BP 80/46.']},
+{id:'vf',name:'Ventricular fibrillation (V-fib)',group:'arrest',kind:'defib',tag:'Shock',gen:genVF,
+ f:[['Rate','Not measurable'],['Rhythm','Chaotic'],['P waves','None'],['PR','None'],['QRS','None. Irregular waves of varying size']],
+ moves:['Confirm unresponsive, not breathing normally, no pulse (10 seconds at most). Call for help and start the code.','Start high-quality CPR: 100 to 120 per min, at least 5 cm deep, full recoil, minimal pauses.','Apply pads and defibrillate as soon as the defibrillator is ready (unsynchronized, per device energy, maximum if unknown).','Resume CPR right away for 2 minutes. IV access (IO if no IV). Epinephrine 1 mg every 3 to 5 min once initial shocks have failed.','Refractory: amiodarone 300 mg then 150 mg, or lidocaine. Look for Hs and Ts.'],
+ watch:['Do not delay the shock to give a drug.','Fine V-fib can look like asystole. Check leads and a second lead.']
+ ,ctx:['Unresponsive, no pulse, not breathing normally.','Collapsed in the waiting room, no pulse.','Found down, no pulse, agonal gasps.']},
+{id:'pea',name:'PEA',group:'arrest',kind:'cpr',tag:'No shock. CPR and epinephrine',gen:genPEA,
+ f:[['Rate','Any, often slow'],['Rhythm','Organized electrical activity'],['P waves','May be present'],['PR','May be present'],['QRS','Narrow or wide. No pulse is the diagnosis']],
+ moves:['Check the pulse (10 seconds at most). Organized rhythm and no pulse means start CPR.','IV access (IO if no IV). Epinephrine 1 mg as soon as possible, then every 3 to 5 min.','Do not shock. Do not use atropine or pacing.','Check rhythm and pulse every 2 minutes. Search for the Hs and Ts (hypovolemia, hypoxia, acidosis, potassium, hypothermia, tension pneumothorax, tamponade, toxins, thrombosis).','Point-of-care ultrasound can help find a cause without pausing compressions.'],
+ watch:['A pretty rhythm on the monitor means nothing without a pulse. Palpate.']
+ ,ctx:['Unresponsive, no pulse.','Found down, no pulse, not breathing.','Post-surgical patient, sudden collapse, no pulse.']},
+{id:'asys',name:'Asystole',group:'arrest',kind:'cpr',tag:'No shock. CPR and epinephrine',gen:genAsys,
+ f:[['Rate','None'],['Rhythm','None'],['P waves','None'],['PR','None'],['QRS','None. Flat line']],
+ moves:['Confirm: check the pulse, then check leads, cable and gain, and confirm in a second lead.','Start CPR right away. IV access (IO if no IV). Epinephrine 1 mg as soon as possible, then every 3 to 5 min.','Do not shock.','Search for the Hs and Ts. Termination of resuscitation is a team and provider decision.'],
+ watch:['A flat line with loose leads or low gain mimics asystole. Fine V-fib can hide in a flat-looking strip.']
+ ,ctx:['Unresponsive, no pulse, no breathing.','Found down, cold and unresponsive, no pulse.','Arrested during transport, no pulse.']}
+];
+var BY={};R.forEach(function(r){BY[r.id]=r;});
+
+var TELLS={
+ 'stach|svt':'Sinus tach speeds up and slows down gradually and shows P waves. SVT starts and stops abruptly, stays very regular, and has no visible P waves.',
+ 'aflutter|afib':'A-fib is irregularly irregular with a fibrillatory baseline. Flutter is regular with sawtooth waves.',
+ 'afib|afrvr':'Same rhythm. RVR means the ventricular rate is over 110.',
+ 'vf|vt':'V-tach has recognizable, uniform wide complexes. V-fib is chaotic with no complexes.',
+ 'asys|vf':'Fine V-fib can look flat. Check the leads and a second lead before calling asystole.',
+ 'nsr|pea':'Only a pulse check separates PEA from a perfusing rhythm.',
+ 'pea|sbrady':'Only a pulse check separates PEA from a perfusing slow rhythm.',
+ 'chb|sbrady':'In complete block the P waves march through the QRS with no relationship.',
+ 'aflutter|stach':'A rate fixed near 150 that does not change points to flutter with 2:1 block.',
+ 'svt|vt':'Look at QRS width. SVT is narrow, V-tach is wide.',
+ 'aflutter|svt':'Look for sawtooth flutter waves. SVT has no visible P waves.',
+ 'nsr|stach':'Both are regular with P waves. The difference is the rate: over 100 is tachycardia.',
+ 'afrvr|svt':'A-fib with RVR is irregular. SVT is very regular.'
+};
+function tellFor(a,b){var k=[a,b].sort().join('|');return TELLS[k]||'';}
+
+var SCEN=[
+{rid:'nsr',rate:76,story:'58-year-old man with 40 minutes of substernal chest pressure.',vit:['HR 76','BP 142/86','SpO₂ 97%','Pulse present'],
+ opts:['Get a 12-lead ECG now and keep him on the monitor','Document normal sinus rhythm and reassess in an hour','Give atropine 1 mg IV push','Prepare for synchronized cardioversion'],
+ why:'A normal rhythm on the strip does not rule out ACS. Chest pain needs a 12-lead ECG within 10 minutes. There is nothing for atropine or cardioversion to treat.'},
+{rid:'stach',rate:132,story:'26-year-old woman with two days of fever and flank pain. She looks ill.',vit:['HR 132','BP 96/58','T 39.6 °C','RR 24'],
+ opts:['Treat the cause: start the sepsis workup (cultures, lactate, IV fluids per order)','Give adenosine 6 mg rapid IV push','Perform synchronized cardioversion at 100 J','Give IV diltiazem to slow the heart rate'],
+ why:'Sinus tachycardia is the body responding to something. Here, likely sepsis. Slowing or shocking the heart removes a compensation and does nothing for the cause.'},
+{rid:'sbrady',rate:38,story:'74-year-old man, dizzy and diaphoretic with new confusion.',vit:['HR 38','BP 80/46','SpO₂ 94%','Pulse present'],
+ opts:['Give atropine 1 mg IV push while applying pacing pads','Give epinephrine 1 mg IV push','Start chest compressions','Monitor and recheck vitals in 15 minutes'],
+ why:'Bradycardia with hypotension and confusion is symptomatic. Atropine 1 mg comes first, with pads on and pacing ready if it fails. Epinephrine 1 mg is the arrest dose, and he has a pulse.'},
+{rid:'sbrady',rate:46,story:'22-year-old competitive runner sent in for a slow pulse. No complaints.',vit:['HR 46','BP 118/70','SpO₂ 99%','Pulse present'],
+ opts:['Observe on the monitor. No drug is needed','Give atropine 1 mg IV push','Apply pacing pads and begin pacing','Start a dopamine infusion'],
+ why:'Well-conditioned athletes can run slow without symptoms. Treat symptoms and perfusion, not the number.'},
+{rid:'svt',rate:188,story:'34-year-old woman with a sudden racing heart for 20 minutes. Alert, no chest pain.',vit:['HR 188','BP 124/78','SpO₂ 98%','Pulse present'],
+ opts:['Start an IV, try a vagal maneuver, then adenosine 6 mg rapid IV push with a flush if it persists','Perform synchronized cardioversion right away','Give amiodarone 300 mg IV push','Give atropine 1 mg IV push'],
+ why:'She is stable with a regular narrow tachycardia. Vagal maneuver first, then adenosine 6 mg rapid push, then 12 mg if needed. Cardioversion is for instability.'},
+{rid:'svt',rate:206,story:'63-year-old man with ischemic chest pain and drowsiness.',vit:['HR 206','BP 72/40','SpO₂ 92%','Pulse present'],
+ opts:['Pads on, sedate if feasible, synchronized cardioversion','Defibrillate at 200 J with the sync button off','Give diltiazem 20 mg IV','Repeat vagal maneuvers and recheck in 10 minutes'],
+ why:'Hypotension, chest pain and altered mental status make him unstable. Do not delay synchronized cardioversion. Defibrillation without sync can trigger V-fib, and drugs or maneuvers waste time.'},
+{rid:'vf',story:'Found unresponsive in the waiting room. Not breathing normally, no carotid pulse.',vit:['Unresponsive','No pulse','Not breathing'],
+ opts:['Start compressions, call a code and defibrillate as soon as the pads are on','Give amiodarone 300 mg IV before starting CPR','Perform synchronized cardioversion','Intubate first, then start compressions'],
+ why:'V-fib in a pulseless patient needs high-quality CPR and defibrillation as soon as possible. Drugs and airways come after the shock.'},
+{rid:'vf',story:'Code in progress. The patient has just received the first shock. The monitor still shows this rhythm.',vit:['Unresponsive','No pulse','Shock 1 delivered'],
+ opts:['Resume compressions right away for 2 minutes and get IV access','Check a pulse for 10 seconds before anything else','Shock again immediately','Give amiodarone 300 mg before resuming compressions'],
+ why:'After a shock, restart compressions immediately and keep going for 2 minutes before the next rhythm check. Epinephrine follows once initial shocks have failed, and amiodarone or lidocaine comes later.'},
+{rid:'vt',rate:172,story:'58-year-old with palpitations. Alert, no chest pain, no shortness of breath.',vit:['HR 172','BP 118/72','SpO₂ 97%','Pulse present'],
+ opts:['Apply pads, start IV, get a 12-lead, prepare an antiarrhythmic infusion and call for expert help','Defibrillate at 200 J, unsynchronized','Give atropine 1 mg IV push','Give epinephrine 1 mg IV push'],
+ why:'He is stable with a pulse. Get access, a 12-lead and a monitor, then an antiarrhythmic infusion with expert help. Pads on as a precaution. Shocks and arrest drugs are for instability or pulselessness.'},
+{rid:'vt',rate:182,story:'66-year-old with chest pain and confusion. Wide regular rhythm on the monitor.',vit:['HR 182','BP 70/38','SpO₂ 91%','Pulse present'],
+ opts:['Synchronized cardioversion, sedating if feasible','Adenosine 6 mg rapid IV push','Amiodarone 150 mg over 10 minutes and observe','Start chest compressions'],
+ why:'V-tach with a pulse and hypotension is unstable, so it gets synchronized cardioversion. He has a pulse, so compressions are not indicated.'},
+{rid:'vt',rate:190,story:'Wide-complex tachycardia on the monitor. The patient is unresponsive.',vit:['Unresponsive','No pulse','Not breathing'],
+ opts:['Start CPR and defibrillate (unsynchronized) as soon as possible','Perform synchronized cardioversion','Give amiodarone 150 mg over 10 minutes','Wait 2 minutes, then reassess the rhythm'],
+ why:'V-tach without a pulse is treated exactly like V-fib: CPR and defibrillation. Synchronization has no place in cardiac arrest.'},
+{rid:'chb',rate:34,story:'81-year-old woman with a fainting episode and now weak and gray.',vit:['HR 34','BP 78/44','SpO₂ 93%','Pulse present'],
+ opts:['Apply pacing pads and prepare to pace, giving atropine 1 mg IV while setting up if ordered','Give adenosine 6 mg rapid IV push','Give metoprolol 5 mg IV','Perform synchronized cardioversion at 50 J'],
+ why:'Complete heart block with hypotension and syncope needs pacing. Atropine may help but often fails in high-grade block, so do not wait for it. Drugs that slow conduction make this worse.'},
+{rid:'afib',rate:88,story:'76-year-old woman sent in after an irregular pulse at a clinic visit. No symptoms. She is unsure when it started.',vit:['HR 88','BP 136/82','SpO₂ 97%','Pulse present'],
+ opts:['12-lead ECG and IV access, document onset time and screen for stroke symptoms','Synchronized cardioversion at 120 J now','Adenosine 6 mg rapid IV push','Atropine 1 mg IV push'],
+ why:'She is stable with a controlled rate, so nothing needs to be shocked or slowed. Confirm on a 12-lead, record when it started and screen for stroke. Unknown onset raises stroke risk with cardioversion, so rhythm and anticoagulation decisions belong to the provider.'},
+{rid:'afrvr',rate:154,story:'66-year-old with palpitations. Alert, no chest pain, lungs clear.',vit:['HR 154','BP 132/80','SpO₂ 96%','Pulse present'],
+ opts:['12-lead ECG, IV access and rate control per order (diltiazem or a beta-blocker)','Immediate synchronized cardioversion','Adenosine 6 mg rapid IV push','Defibrillate at 200 J'],
+ why:'Stable A-fib with RVR is managed with rate control. Cardioversion is for unstable patients. Adenosine is for regular rhythms and does not help here.'},
+{rid:'afrvr',rate:168,story:'72-year-old with shortness of breath, crackles and an irregular pulse.',vit:['HR 168','BP 74/42','SpO₂ 88%','Pulse present'],
+ opts:['Pads on, sedate if feasible, synchronized cardioversion','IV diltiazem bolus','Amiodarone infusion and observe','Unsynchronized shock at 200 J'],
+ why:'Hypotension and acute heart failure make this unstable. Synchronized cardioversion comes first. A diltiazem bolus could drop her pressure further.'},
+{rid:'flutter',rate:150,story:'70-year-old with palpitations. His rate has stayed regular near 150 and did not change with fluids.',vit:['HR 150','BP 126/74','SpO₂ 97%','Pulse present'],
+ opts:['12-lead ECG and IV access, anticipate rate control and an anticoagulation assessment','Treat as sinus tachycardia with more fluids and analgesia','Give atropine 1 mg IV push','Defibrillate at 200 J'],
+ why:'A fixed regular rate near 150 suggests flutter with 2:1 block. Confirm on a 12-lead and anticipate rate control. He is stable, so no shock.'},
+{rid:'pea',rate:48,story:'Found down. Not breathing, no pulse. The monitor shows an organized rhythm.',vit:['Unresponsive','No pulse','Organized rhythm'],
+ opts:['Start CPR, get IV access, epinephrine 1 mg as soon as possible, look for the Hs and Ts','Defibrillate at 200 J','Give atropine 1 mg and start pacing','Perform synchronized cardioversion'],
+ why:'PEA is not a shockable rhythm. CPR and epinephrine, and a hunt for reversible causes. Atropine and pacing are not part of the arrest algorithm.'},
+{rid:'asys',story:'Unresponsive, no pulse, no breathing. The monitor shows a flat line.',vit:['Unresponsive','No pulse','Flat line'],
+ opts:['Start CPR, confirm in a second lead and check the leads, epinephrine as soon as possible','Defibrillate at 200 J','Give atropine 1 mg IV push','Stop and call time of death'],
+ why:'Start compressions while you confirm the rhythm and check leads and gain. Epinephrine as soon as possible. A flat line is not shockable.'}
+];
+
+/* ---------- progress ---------- */
+var KEY='edrr.v1',store={};
+try{store=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){store={};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+function rec(id,ok){var s=store[id]||(store[id]={a:0,c:0,last:null});s.a++;if(ok)s.c++;s.last=ok;save();updateLog();updateMastery(id);}
+function updateLog(){
+  var a=0,c=0;Object.keys(store).forEach(function(k){a+=store[k].a;c+=store[k].c;});
+  $('#log').textContent=a?('Practice log: '+a+' answered, '+Math.round(100*c/a)+'% correct'):'Practice log: nothing answered yet';
+}
+function masteryTxt(id){var s=store[id];return s?('Practice: '+s.c+' of '+s.a+' correct'):'Not practiced yet';}
+function updateMastery(id){var el=$('#m-'+id);if(el)el.textContent=masteryTxt(id);}
+
+function makeStrip(rid,o){o=o||{};var out=BY[rid].gen(o.rate);return {svg:svgOf(out.y,o.label||'ECG rhythm strip',o.sweep),info:out.info};}
+
+/* ---------- tabs ---------- */
+var TABS=['review','name','moves','check'];
+function show(tab){
+  if(TABS.indexOf(tab)<0)tab='review';
+  TABS.forEach(function(t){$('#p-'+t).hidden=t!==tab;var b=$('#t-'+t);b.setAttribute('aria-selected',t===tab?'true':'false');b.tabIndex=t===tab?0:-1;});
+  if(tab==='name'&&!ID.cur)nextID();
+  if(tab==='moves'&&!MV.deck)startMoves();
+  if(tab==='check'&&!CK.rendered)renderCheckIntro();
+}
+$$('.tab').forEach(function(b,i,all){
+  b.addEventListener('click',function(){location.hash='#'+b.getAttribute('data-tab');});
+  b.addEventListener('keydown',function(e){
+    var n=-1;if(e.key==='ArrowRight')n=(i+1)%all.length;if(e.key==='ArrowLeft')n=(i-1+all.length)%all.length;
+    if(n>=0){e.preventDefault();all[n].focus();location.hash='#'+all[n].getAttribute('data-tab');}
+  });
+});
+window.addEventListener('hashchange',function(){show(location.hash.slice(1));});
+function goReview(id){
+  location.hash='#review';
+  setTimeout(function(){var el=$('#r-'+id);if(el){var d=$('details',el);if(d)d.open=true;el.scrollIntoView({behavior:'smooth',block:'start'});}},60);
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-goto]');if(b){goReview(b.getAttribute('data-goto'));}
+});
+
+/* ---------- review ---------- */
+function cardHTML(r){
+  var facts=r.f.map(function(x){return '<dt>'+esc(x[0])+'</dt><dd>'+esc(x[1])+'</dd>';}).join('');
+  var moves=r.moves.map(function(m){return '<li>'+esc(m)+'</li>';}).join('');
+  var watch=r.watch.map(function(m){return '<li>'+esc(m)+'</li>';}).join('');
+  var s=makeStrip(r.id,{label:r.name+' rhythm strip'});
+  return '<article class="card" id="r-'+r.id+'" data-group="'+r.group+'">'+
+    '<div class="mon"><div class="mon-bar"><span>Lead II</span><span>25 mm/s</span></div><div class="strip-slot">'+s.svg+'</div></div>'+
+    '<div class="card-body"><div class="card-head"><h3>'+esc(r.name)+'</h3><span class="tag '+r.kind+'">'+esc(r.tag)+'</span></div>'+
+    '<dl class="facts">'+facts+'</dl>'+
+    '<details><summary>ED nurse first moves and watch-outs</summary><ol class="moves">'+moves+'</ol><h4>Watch out</h4><ul class="watch">'+watch+'</ul></details>'+
+    '<div class="card-foot"><button class="btn ghost small" data-new="'+r.id+'">New strip</button><span class="mast" id="m-'+r.id+'">'+masteryTxt(r.id)+'</span></div></div></article>';
+}
+function renderReview(){
+  $('#cards').innerHTML=R.map(cardHTML).join('');
+  $('#cards').addEventListener('click',function(e){
+    var b=e.target.closest('[data-new]');if(!b)return;
+    var id=b.getAttribute('data-new'),card=$('#r-'+id);
+    $('.strip-slot',card).innerHTML=makeStrip(id,{label:BY[id].name+' rhythm strip',sweep:true}).svg;
+  });
+  $$('.chip[data-f]').forEach(function(c){c.addEventListener('click',function(){
+    $$('.chip[data-f]').forEach(function(x){x.setAttribute('aria-pressed',x===c?'true':'false');});
+    var f=c.getAttribute('data-f');
+    $$('.card',$('#cards')).forEach(function(card){card.hidden=!(f==='all'||card.getAttribute('data-group')===f);});
+  });});
+  var open=false;
+  $('#toggle-all').addEventListener('click',function(){
+    open=!open;$$('#cards details').forEach(function(d){d.open=open;});
+    this.textContent=open?'Collapse all first moves':'Expand all first moves';
+  });
+}
+
+/* ---------- name that rhythm ---------- */
+var ID={cur:null,prev:null,answered:false,ok:0,total:0,streak:0,focus:false};
+function buildIDAnswers(){
+  $('#id-ans').innerHTML=R.map(function(r){return '<button class="opt" data-id="'+r.id+'">'+esc(r.name)+'</button>';}).join('');
+  $('#id-ans').addEventListener('click',function(e){var b=e.target.closest('[data-id]');if(b)answerID(b.getAttribute('data-id'));});
+  $('#id-focus').addEventListener('change',function(){ID.focus=this.checked;});
+}
+function nextID(){
+  var w=R.filter(function(r){return r.id!==ID.prev;}).map(function(r){return {r:r,w:(ID.focus&&store[r.id]&&store[r.id].last===false)?4:1};});
+  var tot=w.reduce(function(a,x){return a+x.w;},0),x=Math.random()*tot,ch=w[0].r;
+  for(var i=0;i<w.length;i++){x-=w[i].w;if(x<=0){ch=w[i].r;break;}}
+  var s=makeStrip(ch.id,{sweep:true});
+  ID.cur={rid:ch.id,info:s.info};ID.prev=ch.id;ID.answered=false;
+  $('#id-strip').innerHTML=s.svg;
+  $('#id-ctx').textContent=pick(ch.ctx);
+  $('#id-fb').innerHTML='';
+  $$('#id-ans .opt').forEach(function(b){b.disabled=false;b.className='opt';b.innerHTML=esc(BY[b.getAttribute('data-id')].name);});
+}
+function answerID(id){
+  if(ID.answered)return;ID.answered=true;
+  var r=BY[ID.cur.rid],ok=id===r.id;
+  ID.total++;if(ok){ID.ok++;ID.streak++;}else ID.streak=0;
+  rec(r.id,ok);
+  $$('#id-ans .opt').forEach(function(b){
+    var bid=b.getAttribute('data-id');b.disabled=true;
+    if(bid===r.id){b.classList.add('ok');b.innerHTML=esc(r.name)+'<span class="mark">Correct</span>';}
+    else if(bid===id){b.classList.add('bad');b.innerHTML=esc(BY[bid].name)+'<span class="mark">Your answer</span>';}
+  });
+  $('#id-score').textContent=ID.ok+' of '+ID.total+' correct';
+  $('#id-streak').textContent='Streak '+ID.streak;
+  var tell=ok?'':tellFor(id,r.id);
+  var look=r.f.map(function(x){return '<li><b>'+esc(x[0])+':</b> '+esc(x[1])+'</li>';}).join('');
+  var mv=r.moves.slice(0,2).map(function(m){return '<li>'+esc(m)+'</li>';}).join('');
+  $('#id-fb').innerHTML='<div class="fb '+(ok?'ok':'bad')+'"><h3>'+(ok?'Correct: ':'Not quite. This is ')+esc(r.name)+'</h3>'+
+    '<p>'+esc(ID.cur.info)+'</p>'+(tell?'<p><b>Telling them apart:</b> '+esc(tell)+'</p>':'')+
+    '<h4>What identifies it</h4><ul class="watch">'+look+'</ul><h4>First moves</h4><ul class="watch">'+mv+'</ul>'+
+    '<div class="row"><button class="btn" id="id-next">Next strip</button><button class="btn ghost" data-goto="'+r.id+'">Open the full card</button></div></div>';
+  $('#id-next').addEventListener('click',nextID);
+  $('#id-next').focus();
+}
+
+/* ---------- first moves ---------- */
+var MV={deck:null,i:0,ok:0,answered:false,opts:null};
+function startMoves(){MV.deck=shuffle(SCEN);MV.i=0;MV.ok=0;renderMove();}
+function renderMove(){
+  var body=$('#mv-body');
+  if(MV.i>=MV.deck.length){
+    var pct=Math.round(100*MV.ok/MV.deck.length);
+    body.innerHTML='<div class="result"><p class="kicker">Scenarios complete</p><p class="big">'+MV.ok+' of '+MV.deck.length+'</p><p class="sub">'+pct+'% correct. Missed scenarios are in your practice log, and you can open any rhythm card from the Review tab.</p><div class="row" style="margin-top:14px"><button class="btn" id="mv-restart">Shuffle and restart</button></div></div>';
+    $('#mv-restart').addEventListener('click',startMoves);return;
+  }
+  var s=MV.deck[MV.i],st=makeStrip(s.rid,{rate:s.rate,sweep:true});
+  MV.answered=false;
+  MV.opts=shuffle(s.opts.map(function(t,k){return {t:t,ok:k===0};}));
+  var L=['A','B','C','D'];
+  body.innerHTML='<div class="scorebar"><span>Scenario '+(MV.i+1)+' of '+MV.deck.length+'</span><span>'+MV.ok+' correct so far</span></div>'+
+    '<div class="bar"><i style="width:'+Math.round(100*MV.i/MV.deck.length)+'%"></i></div>'+
+    '<div class="mon big"><div class="mon-bar"><span>Lead II</span><span>25 mm/s &middot; large box = 0.2 s</span></div>'+st.svg+'</div>'+
+    '<p class="ctx"><b>Patient</b>'+esc(s.story)+'</p>'+
+    '<div class="vit">'+s.vit.map(function(v){return '<span>'+esc(v)+'</span>';}).join('')+'</div>'+
+    '<h3 style="margin-top:18px">What is the ED nurse’s priority action?</h3>'+
+    '<div class="opts" id="mv-opts">'+MV.opts.map(function(o,k){return '<button class="opt" data-k="'+k+'"><span class="key">'+L[k]+'</span><span>'+esc(o.t)+'</span></button>';}).join('')+'</div>'+
+    '<div id="mv-fb" aria-live="polite"></div>';
+  $('#mv-opts').addEventListener('click',function(e){var b=e.target.closest('[data-k]');if(b)answerMove(parseInt(b.getAttribute('data-k'),10));});
+}
+function answerMove(k){
+  if(MV.answered)return;MV.answered=true;
+  var s=MV.deck[MV.i],ok=MV.opts[k].ok;
+  if(ok)MV.ok++;
+  rec(s.rid,ok);
+  $$('#mv-opts .opt').forEach(function(b,j){
+    b.disabled=true;
+    if(MV.opts[j].ok){b.classList.add('ok');b.insertAdjacentHTML('beforeend','<span class="mark">Best action</span>');}
+    else if(j===k){b.classList.add('bad');b.insertAdjacentHTML('beforeend','<span class="mark">Your answer</span>');}
+  });
+  var last=MV.i===MV.deck.length-1;
+  $('#mv-fb').innerHTML='<div class="fb '+(ok?'ok':'bad')+'"><h3>'+(ok?'Correct':'Not quite')+'. The rhythm is '+esc(BY[s.rid].name)+'.</h3><p>'+esc(s.why)+'</p>'+
+    '<div class="row"><button class="btn" id="mv-next">'+(last?'See results':'Next scenario')+'</button><button class="btn ghost" data-goto="'+s.rid+'">Open the rhythm card</button></div></div>';
+  $('#mv-next').addEventListener('click',function(){MV.i++;renderMove();});
+  $('#mv-next').focus();
+}
+
+/* ---------- readiness check ---------- */
+var CK={qs:null,i:0,ans:[],rendered:false};
+function renderCheckIntro(){
+  CK.rendered=true;
+  $('#ck-body').innerHTML='<div class="panel-head"><h2>Readiness check</h2></div><div class="intro"><p>A practice run of the real thing: 15 questions, 7 rhythm identifications and 8 first-move scenarios, drawn at random.</p><ul><li>No feedback until the end, like an assessment.</li><li>You can change an answer until you press Next.</li><li>Practice target: 80% (12 of 15). Your unit’s pass mark may differ, so confirm it with your educator.</li></ul><button class="btn" id="ck-start">Start the check</button></div>';
+  $('#ck-start').addEventListener('click',startCheck);
+}
+function startCheck(){
+  var ids=shuffle(R.map(function(r){return r.id;})).slice(0,7);
+  var qs=ids.map(function(id){var s=makeStrip(id);return {type:'id',rid:id,ctx:pick(BY[id].ctx),svg:s.svg,info:s.info};});
+  shuffle(SCEN).slice(0,8).forEach(function(sc){
+    var s=makeStrip(sc.rid,{rate:sc.rate});
+    qs.push({type:'move',rid:sc.rid,sc:sc,svg:s.svg,opts:shuffle(sc.opts.map(function(t,k){return {t:t,ok:k===0};}))});
+  });
+  CK.qs=shuffle(qs);CK.i=0;CK.ans=[];renderQ();
+}
+function renderQ(){
+  var q=CK.qs[CK.i],L=['A','B','C','D'],n=CK.qs.length,sel=CK.ans[CK.i];
+  var head='<div class="scorebar"><span>Question '+(CK.i+1)+' of '+n+'</span></div><div class="bar"><i style="width:'+Math.round(100*CK.i/n)+'%"></i></div>'+
+    '<div class="mon big"><div class="mon-bar"><span>Lead II</span><span>25 mm/s &middot; large box = 0.2 s</span></div>'+q.svg+'</div>';
+  var body;
+  if(q.type==='id'){
+    body='<p class="ctx"><b>Patient</b>'+esc(q.ctx)+'</p><h3>Which rhythm is this?</h3><div class="ans-grid" id="ck-opts" style="margin-top:12px">'+
+      R.map(function(r){return '<button class="opt'+(sel===r.id?' sel':'')+'" data-v="'+r.id+'" aria-pressed="'+(sel===r.id)+'">'+esc(r.name)+'</button>';}).join('')+'</div>';
+  }else{
+    body='<p class="ctx"><b>Patient</b>'+esc(q.sc.story)+'</p><div class="vit">'+q.sc.vit.map(function(v){return '<span>'+esc(v)+'</span>';}).join('')+'</div>'+
+      '<h3 style="margin-top:18px">What is the ED nurse’s priority action?</h3><div class="opts" id="ck-opts">'+
+      q.opts.map(function(o,k){return '<button class="opt'+(sel===k?' sel':'')+'" data-v="'+k+'" aria-pressed="'+(sel===k)+'"><span class="key">'+L[k]+'</span><span>'+esc(o.t)+'</span></button>';}).join('')+'</div>';
+  }
+  $('#ck-body').innerHTML=head+body+'<div class="row" style="margin-top:16px;display:flex;gap:10px"><button class="btn" id="ck-next"'+(sel===undefined?' disabled':'')+'>'+(CK.i===n-1?'Finish':'Next')+'</button></div>';
+  $('#ck-opts').addEventListener('click',function(e){
+    var b=e.target.closest('[data-v]');if(!b)return;
+    var v=b.getAttribute('data-v');CK.ans[CK.i]=q.type==='id'?v:parseInt(v,10);
+    $$('#ck-opts .opt').forEach(function(x){var on=x===b;x.classList.toggle('sel',on);x.setAttribute('aria-pressed',on?'true':'false');});
+    $('#ck-next').disabled=false;
+  });
+  $('#ck-next').addEventListener('click',function(){if(CK.i===n-1)renderResults();else{CK.i++;renderQ();window.scrollTo(0,0);}});
+}
+function isOK(q,a){return q.type==='id'?a===q.rid:(a!==undefined&&q.opts[a].ok);}
+function renderResults(){
+  var n=CK.qs.length,sc=0,idOk=0,idN=0,mvOk=0,mvN=0,missed=[],rhy={};
+  CK.qs.forEach(function(q,i){
+    var ok=isOK(q,CK.ans[i]);
+    if(ok)sc++;
+    if(q.type==='id'){idN++;if(ok)idOk++;}else{mvN++;if(ok)mvOk++;}
+    rec(q.rid,ok);
+    if(!ok){missed.push(i);rhy[q.rid]=1;}
+  });
+  var pass=sc/n>=0.8;
+  var html='<div class="result '+(pass?'pass':'fail')+'"><p class="kicker">'+(pass?'At or above the practice target':'Below the practice target')+'</p><p class="big">'+sc+' of '+n+'</p>'+
+    '<p class="sub">'+Math.round(100*sc/n)+'% overall. Rhythm identification: '+idOk+' of '+idN+'. First moves: '+mvOk+' of '+mvN+'. Target is 12 of 15.</p>';
+  var ks=Object.keys(rhy);
+  if(ks.length)html+='<h4>Review these rhythms</h4><div class="links">'+ks.map(function(k){return '<button class="btn ghost small" data-goto="'+k+'">'+esc(BY[k].name)+'</button>';}).join('')+'</div>';
+  html+='<div class="row" style="margin-top:16px"><button class="btn" id="ck-again">Take a new check</button></div></div>';
+  if(missed.length){
+    html+='<h2 style="margin:22px 0 12px">What you missed</h2>';
+    missed.forEach(function(i){
+      var q=CK.qs[i],a=CK.ans[i],r=BY[q.rid],yours,right,why;
+      if(q.type==='id'){
+        yours=a?BY[a].name:'No answer';right=r.name;
+        why=q.info+'. '+(a?tellFor(a,q.rid):'');
+      }else{
+        yours=a===undefined?'No answer':q.opts[a].t;
+        right=q.opts.filter(function(o){return o.ok;})[0].t;why=q.sc.why+' The rhythm is '+r.name+'.';
+      }
+      html+='<div class="review-item"><div class="mon"><div class="mon-bar"><span>Lead II</span><span>25 mm/s</span></div>'+q.svg+'</div><div class="in">'+
+        '<p><b>'+(q.type==='id'?'Patient: '+esc(q.ctx):esc(q.sc.story))+'</b></p>'+
+        '<p><b>Your answer:</b> '+esc(yours)+'</p><p><b>Best answer:</b> '+esc(right)+'</p><p>'+esc(why)+'</p></div></div>';
+    });
+  }
+  $('#ck-body').innerHTML=html;
+  $('#ck-again').addEventListener('click',startCheck);
+  window.scrollTo(0,0);
+}
+
+/* ---------- reset ---------- */
+var armed=false;
+$('#reset').addEventListener('click',function(){
+  var b=this;
+  if(!armed){armed=true;b.textContent='Click again to clear progress';setTimeout(function(){armed=false;b.textContent='Reset my progress';},4000);return;}
+  store={};save();updateLog();R.forEach(function(r){updateMastery(r.id);});armed=false;b.textContent='Progress cleared';
+  setTimeout(function(){b.textContent='Reset my progress';},2500);
+});
+
+/* ---------- boot ---------- */
+renderReview();buildIDAnswers();updateLog();
+show(location.hash.slice(1));
+window.__edrr={R:R,SCEN:SCEN,BY:BY,makeStrip:makeStrip};
+})();
+</script>
+
+</html>
